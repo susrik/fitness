@@ -12,6 +12,23 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 import sys
 from pathlib import Path
+import environ
+
+env = environ.Env(
+    DEBUG=(bool, True),
+
+    # SECURITY WARNING: keep the secret key used in production secret!
+    SECRET_KEY=(str, 'django-secret-key'),
+
+    DATABASE_URL=(str, 'sqlite:///db.sqlite3'),  # Default to SQLite if not defined
+    DB_ENGINE=(str, 'django.db.backends.sqlite3'),
+    DB_HOSTNAME=(str, 'db.sqlite3'),
+    DB_NAME=(str, ''),
+    DB_USERNAME=(str, ''),
+    DB_PASSWORD=(str, '')
+)
+environ.Env.read_env()
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,11 +37,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-6cpccxd)^g18v!6v69did$#mb-0%49v(muit%4xr=#12qqtx&_'
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env('DEBUG')
 
 ALLOWED_HOSTS = []
 
@@ -88,15 +104,13 @@ if 'test' in sys.argv or 'test_coverage' in sys.argv:
 else:
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'HOST': '127.0.0.1',
-            'NAME': 'nutrition',
-            'USER': 'nutrition-admin',
-            'PASSWORD': 'nutrition-secret',
+            'ENGINE': env('DB_ENGINE'),
+            'HOST': env('DB_HOSTNAME'),
+            'NAME': env('DB_NAME'),
+            'USER': env('DB_USERNAME'),
+            'PASSWORD': env('DB_PASSWORD'),
         },
     }
-
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
