@@ -20,6 +20,8 @@ env = environ.Env(
     # SECURITY WARNING: keep the secret key used in production secret!
     SECRET_KEY=(str, 'django-secret-key'),
 
+    ALLOWED_HOSTS=(list, []),
+
     DATABASE_URL=(str, 'sqlite:///db.sqlite3'),  # Default to SQLite if not defined
     DB_ENGINE=(str, 'django.db.backends.sqlite3'),
     DB_HOSTNAME=(str, 'db.sqlite3'),
@@ -28,7 +30,6 @@ env = environ.Env(
     DB_PASSWORD=(str, '')
 )
 environ.Env.read_env()
-
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -42,8 +43,7 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = env('ALLOWED_HOSTS')
 
 # Application definition
 
