@@ -1,0 +1,4 @@
+pymysql
+django
+django-environ
+django-nutrition=0.3.0

@@ -10,7 +10,26 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+import sys
 from pathlib import Path
+import environ
+
+env = environ.Env(
+    DEBUG=(bool, True),
+
+    # SECURITY WARNING: keep the secret key used in production secret!
+    SECRET_KEY=(str, 'django-secret-key'),
+
+    ALLOWED_HOSTS=(list, []),
+
+    DATABASE_URL=(str, 'sqlite:///db.sqlite3'),  # Default to SQLite if not defined
+    DB_ENGINE=(str, 'django.db.backends.sqlite3'),
+    DB_HOSTNAME=(str, 'db.sqlite3'),
+    DB_NAME=(str, ''),
+    DB_USERNAME=(str, ''),
+    DB_PASSWORD=(str, '')
+)
+environ.Env.read_env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -19,30 +38,31 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-6cpccxd)^g18v!6v69did$#mb-0%49v(muit%4xr=#12qqtx&_'
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = env('ALLOWED_HOSTS')
 
 # Application definition
 
 INSTALLED_APPS = [
+    'django_nutrition.apps.NutritionConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # 'debug_toolbar',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    # 'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -54,7 +74,7 @@ ROOT_URLCONF = 'fitness.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -62,6 +82,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django_nutrition.utils.context_processors.preferences',
             ],
         },
     },
@@ -73,13 +94,23 @@ WSGI_APPLICATION = 'fitness.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+if 'test' in sys.argv or 'test_coverage' in sys.argv:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',  # Use SQLite for testing
+            'NAME': ':memory:',  # In-memory database for faster tests
+        }
     }
-}
-
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': env('DB_ENGINE'),
+            'HOST': env('DB_HOSTNAME'),
+            'NAME': env('DB_NAME'),
+            'USER': env('DB_USERNAME'),
+            'PASSWORD': env('DB_PASSWORD'),
+        },
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -121,3 +152,17 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+INTERNAL_IPS = [
+    '127.0.0.1',
+    'localhost'
+]
+
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': [
+        # Default for API responses
+        'rest_framework.renderers.JSONRenderer',
+    ],
+}
+
+LOGIN_REDIRECT_URL = '/nutrition'
