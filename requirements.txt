@@ -1,4 +1,4 @@
 pymysql
 django
 django-environ
-django-nutrition
+django-nutrition=0.3.0
